@@ -95,10 +95,9 @@ def add_product_to_carts():
         print("\t   Our product list\n")
         tabulate_view(db.products)
         while True:
-            index = input_number("Enter the index of product you want to add to your carts : ")
-            if (index < 1) or (index > max(db.products["Index"])):
-                print("Index doesn't exist!\n")
-            elif db.products["Stock"][index-1] == 0:
+            index = input_number_max("Enter the index of product you want to add to your carts : ",
+                                     max(db.products["Index"]))
+            if db.products["Stock"][index-1] == 0:
                 print(f'{db.products["Name"][index-1]} is out of stock!\n')
             else: 
                 break
@@ -116,25 +115,13 @@ def add_product_to_carts():
                 time.sleep(5)
                 break
             else:
-                while True:
-                    quantity = input_number("Enter the amount : ")
-                    if quantity == 0:
-                        print("The number can't be 0!\n")
-                    elif quantity > product_stock - cart_prod_qty:
-                        print("Insufficient stock!\n")
-                    else: 
-                        break
+                quantity = input_number_max("Enter the amount : ",
+                                            product_stock - cart_prod_qty)
                 db.carts["Quantity"][carts_index] += quantity
                 db.carts["Price"][carts_index] += db.products["Price"][index-1] * quantity
         else:
-            while True:
-                quantity = input_number("Enter the amount : ")
-                if quantity == 0:
-                    print("The number can't be 0!\n")
-                elif quantity > product_stock:
-                    print("Insufficient stock!\n")
-                else: 
-                    break
+            quantity = input_number_max("Enter the amount : ",
+                                        product_stock)
             db.carts["Name"].append(db.products["Name"][index-1])
             db.carts["Quantity"].append(quantity)
             db.carts["Price/unit"].append(db.products["Price"][index-1])
@@ -156,27 +143,18 @@ def update_item_carts():
         banner()
         print("\t   Your current cart\n")
         tabulate_view(db.carts)
-        index = input_number("Enter the index of product you want to update : ")
-        if (index < 1) or (index > max(db.carts["Index"])):
-            print("Index doesn't exist!")
-            time.sleep(2)
-        else:
-            banner()
-            print("\tUpdate this product in carts\n")
-            cart_details(index)
-            product_name = db.carts["Name"][index-1]
-            index_in_products = db.products["Name"].index(product_name)
-            print(f"Stock\t: {db.products['Stock'][index_in_products]}\n")
-            print("Change into (enter the same number if you don't want to change)")
-            while True:
-                quantity = input_number("Enter the amount : ")
-                if quantity == 0:
-                    print("The number can't be 0!\n")
-                elif quantity > db.products['Stock'][index_in_products]:
-                    print("Insufficient stock!\n")
-                else: 
-                    db.carts["Quantity"][index-1] = quantity
-                    break
+        index = input_number_max("Enter the index of product you want to update : ",
+                                 max(db.carts["Index"]))
+        banner()
+        print("\tUpdate this product in carts\n")
+        cart_details(index)
+        product_name = db.carts["Name"][index-1]
+        index_in_products = db.products["Name"].index(product_name)
+        print(f"Stock\t: {db.products['Stock'][index_in_products]}\n")
+        print("Change into (enter the same number if you don't want to change)")
+        quantity = input_number_max("Enter the amount : ",
+                                    db.products['Stock'][index_in_products])
+        db.carts["Quantity"][index-1] = quantity
     else:
         print("There's no product in carts!\n")
         time.sleep(2)
@@ -186,17 +164,14 @@ def delete_item_carts():
         banner()
         print("\t   Your current cart\n")
         tabulate_view(db.carts)
-        index = input_number("Enter the index of product you want to delete : ")
-        if (index < 1) or (index > max(db.carts["Index"])):
-            print("Index doesn't exist!")
-            time.sleep(2)
+        index = input_number_max("Enter the index of product you want to delete : ",
+                                 max(db.carts["Index"]))
+        cont = input_y_n(f'Delete "{db.carts["Name"][index-1]}" from your product list? (y/n) = ').lower()
+        if cont == "y":
+            delete_item(db.carts, index-1)
         else:
-            cont = input_y_n(f'Delete "{db.carts["Name"][index-1]}" from your product list? (y/n) = ').lower()
-            if cont == "y":
-                delete_item(db.carts, index-1)
-            else:
-                print("Cancelled!")
-                time.sleep(2)
+            print("Cancelled!")
+            time.sleep(2)
     else:
         print("There's no product in carts!\n")
         time.sleep(2)
@@ -281,20 +256,17 @@ def delete_product():
     banner()
     print("\t   Your product list\n")
     tabulate_view(db.products)
-    index = input_number("Enter the index of product you want to delete : ")
-    if (index < 1) or (index > max(db.products["Index"])):
-        print("\nIndex doesn't exist!")
-        time.sleep(2)
+    index = input_number_max("Enter the index of product you want to delete : ",
+                             max(db.products["Index"]))
+    cont = input_y_n(f'\nDelete "{db.products["Name"][index-1]}" from your product list? (y/n) = ').lower()
+    if cont == "y":
+        for key in db.products:
+            del db.products[key][index-1]
+        db.products["Index"].clear()
+        db.products["Index"].extend(i for i in range(1, len(db.products['Name'])+1))
     else:
-        cont = input_y_n(f'\nDelete "{db.products["Name"][index-1]}" from your product list? (y/n) = ').lower()
-        if cont == "y":
-            for key in db.products:
-                del db.products[key][index-1]
-            db.products["Index"].clear()
-            db.products["Index"].extend(i for i in range(1, len(db.products['Name'])+1))
-        else:
-            print("Cancelled!")
-            time.sleep(2)
+        print("Cancelled!")
+        time.sleep(2)
 
 def login():
     # Choose user type 
